@@ -1,0 +1,154 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                     Int             @id @default(autoincrement())
+  username               String          @unique
+  email                  String          @unique
+  password               String
+  firstName              String
+  lastName               String
+  profileImage           String?
+  lastLoginTime          DateTime?
+  twoFactorEnabled       Boolean         @default(true)
+  twoFactorSecret        String?
+  role                   UserRole        @default(USER)
+  isRestricted           Boolean         @default(false)
+  createdAt              DateTime        @default(now())
+  updatedAt              DateTime        @updatedAt
+  emailVerified          Boolean         @default(false)
+  sentFriendRequests     FriendRequest[] @relation("SentFriendRequests")
+  receivedFriendRequests FriendRequest[] @relation("ReceivedFriendRequests")
+  friends                Friend[]        @relation("UserFriends")
+  friendsOf              Friend[]        @relation("FriendOfUser")
+  sentMessages           Message[]       @relation("SentMessages")
+  receivedMessages       Message[]       @relation("ReceivedMessages")
+  activityLogs           ActivityLog[]
+  notifications          Notification[]
+  posts                  Post[]
+  comments               Comment[]
+  likes                  Like[]
+  resetToken             String?
+  resetTokenExpiry       DateTime?
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+model FriendRequest {
+  id         Int                 @id @default(autoincrement())
+  senderId   Int
+  receiverId Int
+  status     FriendRequestStatus
+  createdAt  DateTime            @default(now())
+
+  sender   User @relation("SentFriendRequests", fields: [senderId], references: [id])
+  receiver User @relation("ReceivedFriendRequests", fields: [receiverId], references: [id])
+}
+
+enum FriendRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model Friend {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  friendId  Int
+  createdAt DateTime @default(now())
+
+  user   User @relation("UserFriends", fields: [userId], references: [id])
+  friend User @relation("FriendOfUser", fields: [friendId], references: [id])
+}
+
+model Message {
+  id         Int      @id @default(autoincrement())
+  content    String
+  senderId   Int
+  receiverId Int
+  createdAt  DateTime @default(now())
+
+  sender   User @relation("SentMessages", fields: [senderId], references: [id])
+  receiver User @relation("ReceivedMessages", fields: [receiverId], references: [id])
+}
+
+model ActivityLog {
+  id        Int              @id @default(autoincrement())
+  userId    Int
+  action    String
+  category  ActivityCategory
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+enum ActivityCategory {
+  LOGIN
+  PROFILE_UPDATE
+  FRIEND_REQUEST
+  MESSAGE_SENT
+  POST_CREATED
+  COMMENT_ADDED
+  LIKE_ADDED
+  OTHER
+}
+
+model Notification {
+  id        Int              @id @default(autoincrement())
+  userId    Int
+  message   String
+  type      NotificationType
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+enum NotificationType {
+  FRIEND_REQUEST
+  MESSAGE
+  POST_INTERACTION
+  SYSTEM
+}
+
+model Post {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id])
+  comments Comment[]
+  likes    Like[]
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  postId    Int
+  userId    Int
+  content   String
+  createdAt DateTime @default(now())
+
+  post Post @relation(fields: [postId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Like {
+  id        Int      @id @default(autoincrement())
+  postId    Int
+  userId    Int
+  createdAt DateTime @default(now())
+
+  post Post @relation(fields: [postId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+}

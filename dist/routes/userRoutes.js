@@ -1,0 +1,20 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const authMiddleware_1 = require("../middleware/authMiddleware");
+const userController_1 = require("../controllers/userController");
+const router = express_1.default.Router();
+router.get('/activity-feed', authMiddleware_1.authenticateToken, userController_1.getActivityFeed);
+router.get('/posts/user/:username', authMiddleware_1.authenticateToken, userController_1.getUserPosts);
+router.post('/friend-request', authMiddleware_1.authenticateToken, userController_1.sendFriendRequest);
+router.put('/friend-request/:requestId', authMiddleware_1.authenticateToken, userController_1.respondToFriendRequest);
+router.post('/posts', authMiddleware_1.authenticateToken, userController_1.createPost);
+router.put('/posts/:postId', authMiddleware_1.authenticateToken, userController_1.updatePost);
+router.delete('/posts/:postId', authMiddleware_1.authenticateToken, userController_1.deletePost);
+router.post('/posts/:postId/like', authMiddleware_1.authenticateToken, userController_1.likePost);
+router.post('/posts/:postId/comment', authMiddleware_1.authenticateToken, userController_1.commentOnPost);
+router.delete('/friend-request/:requestId', authMiddleware_1.authenticateToken, userController_1.cancelFriendRequest);
+exports.default = router;

@@ -1,0 +1,21 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const authController_1 = require("../controllers/authController");
+const authMiddleware_1 = require("../middleware/authMiddleware");
+const router = express_1.default.Router();
+router.get('/recent-users', authMiddleware_1.authenticateToken, authController_1.getRecentUsers);
+router.get('/user/search', authMiddleware_1.authenticateToken, authController_1.searchUserByUsername);
+router.post('/signup', authController_1.signup);
+router.post('/login', authController_1.login);
+router.post('/verify-login-otp', authController_1.verifyLoginOTP);
+router.post('/forgot-password', authController_1.forgotPassword);
+router.post('/verify-otp', authController_1.verifyEmail);
+router.post('/verify-reset-otp', authController_1.verifyResetOTP);
+router.post('/reset-password', authController_1.resetPassword);
+router.put('/user', authMiddleware_1.authenticateToken, authController_1.updateUser);
+router.delete('/user', authMiddleware_1.authenticateToken, authController_1.deleteUser);
+exports.default = router;
